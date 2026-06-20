@@ -25,7 +25,17 @@
       },
       {
         "tab": "API reference",
-        "openapi": "openapi.json"
+        "openapi": "openapi.json",
+        "pages": [
+          { "group": "Account", "pages": ["GET /me"] },
+          { "group": "Channels", "pages": ["GET /channels"] },
+          { "group": "Media", "pages": ["POST /media"] },
+          {
+            "group": "Posts",
+            "pages": ["POST /posts", "GET /posts", "GET /posts/{id}", "DELETE /posts/{id}"]
+          },
+          { "group": "Leaderboard", "pages": ["GET /leaderboard"] }
+        ]
       }
     ]
   },
