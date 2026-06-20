@@ -9,6 +9,12 @@
     { "url": "https://api.marketordie.io/v1", "description": "Production" }
   ],
   "security": [{ "bearerAuth": [] }],
+  "tags": [
+    { "name": "Account", "description": "Who the API key acts as." },
+    { "name": "Channels", "description": "Connected accounts you can post to." },
+    { "name": "Posts", "description": "Create, schedule, list, and delete posts." },
+    { "name": "Leaderboard", "description": "Team standings by points." }
+  ],
   "paths": {
     "/me": {
       "get": {
@@ -152,6 +158,14 @@
                     "channels": ["conn_abc"],
                     "thread": ["Why we built an API:", "So your team can ship from anywhere."],
                     "scheduled_for": "2026-07-01T10:00:00Z"
+                  }
+                },
+                "draft": {
+                  "summary": "Save as a draft",
+                  "value": {
+                    "channels": ["conn_abc"],
+                    "text": "Half-baked idea to finish later.",
+                    "draft": true
                   }
                 }
               }
@@ -359,6 +373,11 @@
             "type": "integer",
             "default": 20,
             "description": "Points to claim for this post (admin-reviewed)."
+          },
+          "draft": {
+            "type": "boolean",
+            "default": false,
+            "description": "Save as a draft instead of publishing/scheduling. When true, `scheduled_for` is ignored and nothing is queued."
           }
         }
       },
