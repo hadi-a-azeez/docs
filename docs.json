@@ -23,7 +23,7 @@
           },
           {
             "group": "Integrations",
-            "pages": ["mcp"]
+            "pages": ["mcp-server"]
           }
         ]
       },
