@@ -1,0 +1,29 @@
+---
+title: "Rate limits"
+description: "How many requests you can make, and how to handle limits."
+---
+
+Each API key is limited to **120 requests per minute** (a fixed window).
+
+Every response includes the current budget:
+
+| Header | Meaning |
+| --- | --- |
+| `X-RateLimit-Limit` | Max requests per window (120). |
+| `X-RateLimit-Remaining` | Requests left in the current window. |
+
+When you exceed the limit, you get `429`:
+
+```json
+{ "error": { "code": "rate_limited", "message": "Too many requests." } }
+```
+
+## Handling limits
+
+- Watch `X-RateLimit-Remaining` and slow down before you hit zero.
+- On a `429`, back off and retry after the window resets (≤ 60s).
+- Batch where you can — a single `POST /posts` can target many channels at once.
+
+<Note>
+  Need a higher limit? Email [hadi@heffl.com](mailto:hadi@heffl.com).
+</Note>

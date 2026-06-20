@@ -1,0 +1,29 @@
+---
+title: "Errors"
+description: "Error format and status codes."
+---
+
+Errors use standard HTTP status codes and a consistent JSON shape:
+
+```json
+{ "error": { "code": "invalid_request", "message": "Provide `text` or a non-empty `thread`." } }
+```
+
+- `code` — a stable, machine-readable string. Branch on this.
+- `message` — a human-readable explanation. Don't parse it.
+
+## Status codes
+
+| Status | Code | Meaning |
+| --- | --- | --- |
+| `400` | `invalid_request` | A parameter is missing or invalid. |
+| `401` | `unauthorized` | Missing, invalid, or revoked API key. |
+| `403` | `forbidden` | The key lacks the required scope. |
+| `404` | `not_found` | The resource doesn't exist (or isn't yours). |
+| `429` | `rate_limited` | Too many requests — see [Rate limits](/rate-limits). |
+| `500` | `internal_error` | Something went wrong on our side. |
+
+<Tip>
+  `4xx` errors are safe to surface to your users after fixing the request.
+  Retry `429` and `5xx` with backoff.
+</Tip>

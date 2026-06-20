@@ -1,47 +1,80 @@
 ---
 title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+description: "Create a key and ship your first post in two calls."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+## 1. Create an API key
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+In the app, go to **Profile → API keys**, give the key a name, and click
+**Create**. Copy the key (`mod_live_…`) — it's shown only once.
 
-## Prerequisites
+<Warning>
+  Treat your key like a password. It can post on your behalf. Revoke it anytime
+  from the same screen.
+</Warning>
 
-Before you begin, you must have:
+## 2. Find your channels
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+Every post targets one or more connected channels. List them and grab the `id`s:
 
-## Get started
+```bash
+curl https://api.marketordie.io/v1/channels \
+  -H "Authorization: Bearer $MOD_KEY"
+```
 
-<Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+```json Response
+{
+  "data": [
+    { "id": "conn_abc", "platform": "x", "name": "Hadi", "username": "HadiiAzeez", "verified": true },
+    { "id": "conn_def", "platform": "linkedin", "name": "Hadi Azeez", "username": "Hadi Azeez", "verified": false }
+  ]
+}
+```
 
-    ```bash
-    npm install your-package
-    ```
-  </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+## 3. Ship a post
 
-    ```bash
-    your-cli init
-    ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+Post to one or more channels at once. Omit `scheduled_for` to publish now.
 
-    ```bash
-    your-cli start
-    ```
-  </Step>
-</Steps>
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.marketordie.io/v1/posts \
+  -H "Authorization: Bearer $MOD_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "channels": ["conn_abc", "conn_def"],
+    "text": "We just shipped our public API."
+  }'
+```
+
+```js JavaScript
+const res = await fetch("https://api.marketordie.io/v1/posts", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.MOD_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    channels: ["conn_abc", "conn_def"],
+    text: "We just shipped our public API.",
+  }),
+});
+const { data } = await res.json();
+```
+
+```python Python
+import os, requests
+
+requests.post(
+    "https://api.marketordie.io/v1/posts",
+    headers={"Authorization": f"Bearer {os.environ['MOD_KEY']}"},
+    json={"channels": ["conn_abc", "conn_def"], "text": "We just shipped our public API."},
+)
+```
+</CodeGroup>
+
+That's it — the post goes through the same reliable queue as the composer, with
+automatic retries and failure notifications.
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  Need help? Email [hadi@heffl.com](mailto:hadi@heffl.com).
 </Tip>

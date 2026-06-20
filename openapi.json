@@ -1,0 +1,396 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Market or Die API",
+    "version": "1.0.0",
+    "description": "Compose, schedule, and ship posts to every connected channel — programmatically."
+  },
+  "servers": [
+    { "url": "https://api.marketordie.io/v1", "description": "Production" }
+  ],
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/me": {
+      "get": {
+        "operationId": "getMe",
+        "summary": "Get current identity",
+        "description": "Returns the org and member the API key acts as, plus its scopes.",
+        "tags": ["Account"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "org": {
+                          "type": "object",
+                          "properties": {
+                            "id": { "type": "string" },
+                            "name": { "type": "string" },
+                            "slug": { "type": "string" }
+                          }
+                        },
+                        "membership": {
+                          "type": "object",
+                          "properties": {
+                            "id": { "type": "string" },
+                            "role": { "type": "string", "enum": ["admin", "member"] },
+                            "name": { "type": "string", "nullable": true },
+                            "email": { "type": "string", "nullable": true }
+                          }
+                        },
+                        "scopes": { "type": "array", "items": { "type": "string" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/channels": {
+      "get": {
+        "operationId": "listChannels",
+        "summary": "List connected channels",
+        "description": "All connected accounts you can post to. Use a channel `id` as a target in `POST /posts`.",
+        "tags": ["Channels"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Channel" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/posts": {
+      "get": {
+        "operationId": "listPosts",
+        "summary": "List posts",
+        "description": "Your posts, newest first. Paginated.",
+        "tags": ["Posts"],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status.",
+            "schema": {
+              "type": "string",
+              "enum": ["draft", "scheduled", "publishing", "published", "failed", "canceled"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size (1–100).",
+            "schema": { "type": "integer", "default": 25, "maximum": 100, "minimum": 1 }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of results to skip.",
+            "schema": { "type": "integer", "default": 0, "minimum": 0 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Post" } },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "operationId": "createPost",
+        "summary": "Create or schedule a post",
+        "description": "Publishes (or schedules) a post to one or more channels. Returns one post object per channel. Omit `scheduled_for` to publish as soon as possible.",
+        "tags": ["Posts"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreatePostRequest" },
+              "examples": {
+                "single": {
+                  "summary": "One post, two channels, now",
+                  "value": {
+                    "channels": ["conn_abc", "conn_def"],
+                    "text": "We just shipped our public API.",
+                    "points": 20
+                  }
+                },
+                "scheduledThread": {
+                  "summary": "A scheduled thread",
+                  "value": {
+                    "channels": ["conn_abc"],
+                    "thread": ["Why we built an API:", "So your team can ship from anywhere."],
+                    "scheduled_for": "2026-07-01T10:00:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Post" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/posts/{id}": {
+      "get": {
+        "operationId": "getPost",
+        "summary": "Get a post",
+        "tags": ["Posts"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "data": { "$ref": "#/components/schemas/Post" } }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "operationId": "deletePost",
+        "summary": "Delete a post",
+        "description": "Deletes a draft or scheduled post. Already-published posts are removed from your history only (not from the platform).",
+        "tags": ["Posts"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "deleted": { "type": "boolean" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/leaderboard": {
+      "get": {
+        "operationId": "getLeaderboard",
+        "summary": "Get the leaderboard",
+        "description": "Org members ranked by all-time approved points.",
+        "tags": ["Leaderboard"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/LeaderboardEntry" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Your API key as a bearer token: `Authorization: Bearer mod_live_…`. (You can also send it as `x-api-key`.)"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Missing or invalid API key.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": { "code": "unauthorized", "message": "Invalid or revoked API key." } }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Invalid request.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": { "code": "invalid_request", "message": "Provide `text` or a non-empty `thread`." } }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": { "code": "not_found", "message": "Post not found." } }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Channel": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Connection id — use as a target in POST /posts." },
+          "platform": {
+            "type": "string",
+            "enum": ["x", "linkedin", "youtube", "instagram"]
+          },
+          "name": { "type": "string", "nullable": true },
+          "username": { "type": "string", "nullable": true },
+          "verified": { "type": "boolean" }
+        }
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "scheduled", "publishing", "published", "failed", "canceled"]
+          },
+          "channel": { "type": "string", "nullable": true, "description": "Platform slug." },
+          "posts": {
+            "type": "array",
+            "description": "Ordered thread parts.",
+            "items": { "type": "object", "properties": { "text": { "type": "string" } } }
+          },
+          "scheduled_for": { "type": "string", "format": "date-time", "nullable": true },
+          "published_urls": { "type": "array", "items": { "type": "string" } },
+          "error": { "type": "string", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreatePostRequest": {
+        "type": "object",
+        "required": ["channels"],
+        "properties": {
+          "channels": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "Connection ids from GET /channels."
+          },
+          "text": { "type": "string", "description": "Single-post text. Use this or `thread`." },
+          "thread": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Multi-part thread (X). Other platforms join the parts."
+          },
+          "scheduled_for": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601. Omit to publish as soon as possible."
+          },
+          "points": {
+            "type": "integer",
+            "default": 20,
+            "description": "Points to claim for this post (admin-reviewed)."
+          }
+        }
+      },
+      "LeaderboardEntry": {
+        "type": "object",
+        "properties": {
+          "membership_id": { "type": "string" },
+          "name": { "type": "string", "nullable": true },
+          "level": { "type": "integer" },
+          "points": { "type": "integer" }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer" },
+          "offset": { "type": "integer" },
+          "total": { "type": "integer" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

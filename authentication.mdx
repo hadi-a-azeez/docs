@@ -1,0 +1,46 @@
+---
+title: "Authentication"
+description: "How API keys work and how to keep them safe."
+---
+
+The API authenticates with **API keys**. Every request must include one.
+
+## Sending your key
+
+Pass the key as a bearer token (recommended):
+
+```bash
+Authorization: Bearer mod_live_…
+```
+
+Or as a header:
+
+```bash
+x-api-key: mod_live_…
+```
+
+A request without a valid key returns `401`:
+
+```json
+{ "error": { "code": "unauthorized", "message": "Missing API key." } }
+```
+
+## Creating and revoking keys
+
+Manage keys in the app under **Profile → API keys**.
+
+- **Create** — name it and copy the key. It's shown **once**.
+- **Revoke** — deletes the key immediately; any request using it then fails.
+
+A key acts as the member who created it, scoped to that member's workspace.
+
+## How keys are stored
+
+Keys are generated in your browser; only a **SHA-256 hash** is ever sent to and
+stored on our servers. We can't recover the plaintext — if you lose a key,
+revoke it and create a new one.
+
+<Warning>
+  A key can post on your behalf. Never commit it to source control or expose it
+  in client-side code. Use environment variables and rotate periodically.
+</Warning>
