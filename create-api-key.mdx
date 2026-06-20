@@ -1,0 +1,43 @@
+---
+title: "Create an API key"
+description: "Generate, copy, and revoke API keys from the app."
+---
+
+API keys live in the app, under your profile.
+
+<Steps>
+  <Step title="Open the Developers tab">
+    Go to **Profile** (the avatar in the top nav), then open the **Developers (API)** tab.
+  </Step>
+  <Step title="Name and create the key">
+    Type a name that says where it'll be used (e.g. `Zapier`, `n8n`, `my script`)
+    and click **Create**.
+  </Step>
+  <Step title="Copy it now">
+    The key (`mod_live_…`) is shown **once**. Copy it immediately and store it in
+    a secret manager or environment variable.
+
+    <Warning>
+      We only store a hash of your key — we can't show it again. If you lose it,
+      revoke it and create a new one.
+    </Warning>
+  </Step>
+  <Step title="Use it">
+    Send it as a bearer token on every request:
+
+    ```bash
+    curl https://api.marketordie.io/v1/me \
+      -H "Authorization: Bearer mod_live_…"
+    ```
+  </Step>
+</Steps>
+
+## Revoking a key
+
+In the same **Developers (API)** tab, click the trash icon next to a key to
+revoke it. Any request using that key immediately starts failing with `401`.
+
+<Tip>
+  Use a separate key per integration. That way you can revoke one without
+  breaking the others.
+</Tip>

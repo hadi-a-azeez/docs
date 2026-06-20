@@ -12,6 +12,7 @@
   "tags": [
     { "name": "Account", "description": "Who the API key acts as." },
     { "name": "Channels", "description": "Connected accounts you can post to." },
+    { "name": "Media", "description": "Upload images to attach to posts." },
     { "name": "Posts", "description": "Create, schedule, list, and delete posts." },
     { "name": "Leaderboard", "description": "Team standings by points." }
   ],
@@ -82,6 +83,52 @@
               }
             }
           },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/media": {
+      "post": {
+        "operationId": "uploadMedia",
+        "summary": "Upload media",
+        "description": "Upload an image (JPEG, PNG, WebP, or GIF, up to 10MB) and get an `id` to attach to a post via `media`. Send as `multipart/form-data` with a `file` field.",
+        "tags": ["Media"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "format": "binary", "description": "The image file." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "description": "Pass this in a post's `media` array." },
+                        "type": { "type": "string", "enum": ["image"] },
+                        "url": { "type": "string", "format": "uri" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
           "401": { "$ref": "#/components/responses/Unauthorized" }
         }
       }
@@ -363,6 +410,11 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "Multi-part thread (X). Other platforms join the parts."
+          },
+          "media": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Up to 4 image ids from POST /media. Attached to the first post."
           },
           "scheduled_for": {
             "type": "string",

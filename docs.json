@@ -15,7 +15,7 @@
         "pages": [
           {
             "group": "Getting started",
-            "pages": ["index", "quickstart", "authentication"]
+            "pages": ["index", "quickstart", "create-api-key", "authentication"]
           },
           {
             "group": "Concepts",
