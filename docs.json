@@ -20,6 +20,10 @@
           {
             "group": "Concepts",
             "pages": ["rate-limits", "errors"]
+          },
+          {
+            "group": "Integrations",
+            "pages": ["mcp"]
           }
         ]
       },

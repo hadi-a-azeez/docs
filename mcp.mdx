@@ -1,0 +1,67 @@
+---
+title: "MCP server"
+description: "Use Market or Die from your AI assistant (Claude, Cursor, …)."
+---
+
+The Market or Die **MCP server** lets an AI assistant act on your workspace —
+list channels, draft/schedule/publish posts, and read the leaderboard — through
+the same [API](/index) you'd call directly.
+
+## Prerequisite
+
+Create an API key in the app under **Profile → Developers**. See
+[Create an API key](/create-api-key).
+
+## Add the server
+
+Add this to your MCP client's config (Claude Desktop, Cursor, Cline, …):
+
+```json
+{
+  "mcpServers": {
+    "marketordie": {
+      "command": "npx",
+      "args": ["-y", "@marketordie/mcp"],
+      "env": { "MARKETORDIE_API_KEY": "mod_live_…" }
+    }
+  }
+}
+```
+
+<Note>
+  In Claude Desktop the config file is **Settings → Developer → Edit Config**.
+  In Cursor it's **Settings → MCP**. Restart the client after editing.
+</Note>
+
+### Environment
+
+| Variable | Required | Default |
+| --- | --- | --- |
+| `MARKETORDIE_API_KEY` | yes | — |
+| `MARKETORDIE_BASE_URL` | no | `https://api.marketordie.io/v1` |
+
+## Tools
+
+| Tool | What it does |
+| --- | --- |
+| `whoami` | Current workspace, member, and scopes. |
+| `list_channels` | Connected accounts (use their ids in `create_post`). |
+| `create_post` | Publish now, schedule, or save a draft to one or more channels. |
+| `list_posts` | List posts; filter by status, paginate. |
+| `get_post` | Fetch one post. |
+| `delete_post` | Delete a draft or scheduled post. |
+| `get_leaderboard` | Team standings by points. |
+
+## Try it
+
+Once connected, ask your assistant things like:
+
+- "What channels can I post to in Market or Die?"
+- "Draft a LinkedIn post announcing our new pricing."
+- "Schedule this thread to X for tomorrow 9am."
+- "Show my scheduled posts."
+
+<Tip>
+  The MCP is a thin wrapper over the REST API — anything in the
+  [API reference](/index) is available to the assistant.
+</Tip>
